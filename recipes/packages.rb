@@ -7,14 +7,30 @@
 # All rights reserved - Do Not Redistribute
 #
 
-# Include our ZEN::Package module:
-::Chef::Recipe.send(:include, ZEN::Package)
-
 
 # Package list to install:
 pkg_list = ['lxc','lxc-templates']
 
 
-# Call to ZEN::Package to install
-# the list of packages above:
-install_pkgs (pkg_list)
+# If we're not running in the Production environment,
+# we will update all packages on each run:
+if environment != "Production"
+  execute "yummy-update" do
+    command "yum update -y"
+  end
+end
+
+
+# Once all base packages have been updated, lets install
+# a base set of packages that should be on every node of ours:
+if pkg_list.class == Array
+  pkg_list.each do |pkg|
+    package "#{pkg}" do
+      action :install
+    end
+  end
+else
+  package "#{pkg_list}" do
+    action :install
+  end
+end

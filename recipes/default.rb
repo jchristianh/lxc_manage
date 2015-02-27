@@ -23,17 +23,17 @@ include_recipe "lxc_manage::packages"
 # 7. (possible) lxc-create -t centos -n foo -- --release=7
 
 
-node['lxc_container']['node'].each do |name,vars|
+node[:lxc_container][:node].each do |name,vars|
   if vars['active']
-    lxc_manage_node "manage-#{name}"
-      action :create
+    lxc_manage_node "manage-#{name}" do
       lxc_name name
       lxc_vars vars
+      action :create
     end
   else
-    lxc_manage_node "destroying-#{name}"
-      action :destroy
+    lxc_manage_node "destroying-#{name}" do
       lxc_name name
+      action :destroy
     end
   end
 end

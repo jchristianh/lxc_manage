@@ -14,7 +14,7 @@ pkg_list = ['lxc','lxc-templates']
 
 # If we're not running in the Production environment,
 # we will update all packages on each run:
-if environment != "Production"
+if node.environment != "Production"
   execute "yummy-update" do
     command "yum update -y"
   end

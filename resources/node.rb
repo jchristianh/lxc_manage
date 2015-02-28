@@ -12,4 +12,5 @@ actions :create, :destroy
 
 attribute :name,     :name_attribute => true
 attribute :lxc_name, :kind_of        => String, :required => true
-attribute :lxc_vars, :kind_of        => Array
+attribute :lxc_ver,  :kind_of        => String
+attribute :lxc_vars, :kind_of        => Hash

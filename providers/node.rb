@@ -43,7 +43,7 @@ action :create do
   execute "backup-#{lxc_conf}" do
     command "mv #{lxc_conf} #{lxc_conf}.dist"
     not_if { ::File.exists?("#{lxc_conf}.dist") }
-    { not_if is_setup == true }
+    not_if { is_setup == true }
   end
 
 

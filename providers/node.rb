@@ -16,6 +16,7 @@ action :create do
   rootfs       = lxc_base + "/rootfs"
   lxc_conf     = lxc_base + "/config"
   lxc_opts = ""
+  mac_addr = node[:lxc_container][:node][:"#{new_resource.lxc_name}"][:hwaddr]
 
   if (new_resource.lxc_ver)
     lxc_opts = "-- --release=#{new_resource.lxc_ver}"
@@ -69,7 +70,6 @@ action :create do
   # The MAC address node attribute got re-set to a new value above
   # we need to a re-read of that new value inside a ruby_block so
   # that we can get the updated value to write out to our template
-  mac_addr = ""
   ruby_block "set_#{new_resource.lxc_name}_mac_addr" do
     block do
       mac_addr = node[:lxc_container][:node][:"#{new_resource.lxc_name}"][:hwaddr]

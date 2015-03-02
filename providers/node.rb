@@ -48,11 +48,23 @@ action :create do
   # can generate via: openssl rand -hex 6 | sed 's/\(..\)/\1:/g; s/.$//'
   ruby_block "mac_addr_#{new_resource.name}" do
     block do
-      read_mac = ::File.readlines("#{lxc_conf}.dist").grep(/^lxc.network.hwaddr/)
-      put_mac  = read_mac[0].split(/=/).join("").sub(/.*?\s+/, "").chomp
+      #read_mac = ::File.readlines("#{lxc_conf}.dist").grep(/^lxc.network.hwaddr/)
+      #put_mac  = read_mac[0].split(/=/).join("").sub(/.*?\s+/, "").chomp
+      def generate_mac
+        mac = `openssl rand -hex 6`.chomp
+        mac = mac.scan(/.{1,2}/).join(":")
+
+        if (mac =~ /^fe:/)
+          return mac
+        else
+          generate_mac
+        end
+      end
+
+      gen_mac = generate_mac
 
       # Reset MAC to the LXC generated one:
-      node.set[:lxc_container][:node][:"#{new_resource.lxc_name}"][:hwaddr] = put_mac
+      node.set[:lxc_container][:node][:"#{new_resource.lxc_name}"][:hwaddr] = gen_mac
     end
   end
 

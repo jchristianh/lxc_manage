@@ -45,6 +45,7 @@ action :create do
   # appropriate node attribute
   #set_mac_addr(new_resource.lxc_name)
   # lxc.network.hwaddr = 86:D6:E3:18:2D:E0
+  # can generate via: openssl rand -hex 6 | sed 's/\(..\)/\1:/g; s/.$//'
   ruby_block "mac_addr_#{new_resource.name}" do
     block do
       read_mac = ::File.readlines("#{lxc_conf}.dist").grep(/^lxc.network.hwaddr/)

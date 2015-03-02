@@ -16,7 +16,6 @@ action :create do
   rootfs       = lxc_base + "/rootfs"
   lxc_conf     = lxc_base + "/config"
   lxc_opts = ""
-  mac_addr = node[:lxc_container][:node][:"#{new_resource.lxc_name}"][:hwaddr]
 
   if (new_resource.lxc_ver)
     lxc_opts = "-- --release=#{new_resource.lxc_ver}"
@@ -45,36 +44,27 @@ action :create do
   # file (config.dist) created earlier, and update the
   # appropriate node attribute
   #set_mac_addr(new_resource.lxc_name)
+  # lxc.network.hwaddr = 86:D6:E3:18:2D:E0
+  # can generate via: openssl rand -hex 6 | sed 's/\(..\)/\1:/g; s/.$//'
   ruby_block "mac_addr_#{new_resource.name}" do
     block do
-      def generate_mac
-        mac = `openssl rand -hex 6`.chomp
-        mac = mac.scan(/.{1,2}/).join(":")
+      read_mac = ::File.readlines("#{lxc_conf}.dist").grep(/^lxc.network.hwaddr/)
+      put_mac  = read_mac[0].split(/=/).join("").sub(/.*?\s+/, "").chomp
 
-        if (mac =~ /^fe:/)
-          return mac
-        else
-          generate_mac
-        end
-      end
-
-      gen_mac = generate_mac
-
-      # Reset MAC to the OpenSSL generated one:
-      node.set[:lxc_container][:node][:"#{new_resource.lxc_name}"][:hwaddr] = gen_mac
+      # Reset MAC to the LXC generated one:
+      node.set[:lxc_container][:node][:"#{new_resource.lxc_name}"][:hwaddr] = put_mac
     end
-    not_if { ::File.exists?("#{lxc_conf}.dist") }
   end
 
 
   # The MAC address node attribute got re-set to a new value above
   # we need to a re-read of that new value inside a ruby_block so
   # that we can get the updated value to write out to our template
+  mac_addr = ""
   ruby_block "set_#{new_resource.lxc_name}_mac_addr" do
     block do
       mac_addr = node[:lxc_container][:node][:"#{new_resource.lxc_name}"][:hwaddr]
     end
-    not_if { ::File.exists?("#{lxc_conf}.dist") }
   end
 
 

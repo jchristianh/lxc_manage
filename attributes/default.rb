@@ -13,16 +13,16 @@
 # cnode6 = container name/hostname
 # type   = lxc template name
 # lxc_version = image version
-# hwaddr = can put anything her; mac will be auto generated
+# hwaddr = can put anything here; mac will be auto generated
 # active = true/false; true creates; false destroys
 ###########################################################
 default['lxc_container']['node']['cnode6']['type']        = "centos"
 default['lxc_container']['node']['cnode6']['lxc_version'] = "7"
 default['lxc_container']['node']['cnode6']['hwaddr']      = "aa:aa:aa:aa:aa:aa"
-default['lxc_container']['node']['cnode6']['active']      = true
+default['lxc_container']['node']['cnode6']['active']      = false
 
 
 default['lxc_container']['node']['cnode7']['type']        = "centos"
 default['lxc_container']['node']['cnode7']['lxc_version'] = "7"
 default['lxc_container']['node']['cnode7']['hwaddr']      = "aa:aa:aa:aa:aa:aa"
-default['lxc_container']['node']['cnode7']['active']      = true
+default['lxc_container']['node']['cnode7']['active']      = false

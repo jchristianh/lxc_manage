@@ -11,8 +11,8 @@
 action :create do
 
   # Some vars to increase code readability
-  def_domain   = node[:lxc_container][:def_domain]
-  lxc_base     = node[:lxc_container][:path] + "/"+new_resource.lxc_name
+  def_domain   = node["lxc_container"]["def_domain"]
+  lxc_base     = node["lxc_container"]["path"] + "/" + new_resource.lxc_name
   rootfs       = lxc_base + "/rootfs"
   lxc_conf     = lxc_base + "/config"
   lxc_opts = ""
@@ -52,7 +52,7 @@ action :create do
       put_mac  = read_mac[0].split(/=/).join("").sub(/.*?\s+/, "").chomp
 
       # Reset MAC to the LXC generated one:
-      node.set[:lxc_container][:node][:"#{new_resource.lxc_name}"][:hwaddr] = put_mac
+      node.set["lxc_container"]["node"]["#{new_resource.lxc_name}"]["hwaddr"] = put_mac
     end
   end
 
@@ -63,7 +63,7 @@ action :create do
   mac_addr = ""
   ruby_block "set_#{new_resource.lxc_name}_mac_addr" do
     block do
-      mac_addr = node[:lxc_container][:node][:"#{new_resource.lxc_name}"][:hwaddr]
+      mac_addr = node["lxc_container"]["node"]["#{new_resource.lxc_name}"]["hwaddr"]
     end
   end
 

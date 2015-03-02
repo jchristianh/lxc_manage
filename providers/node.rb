@@ -16,16 +16,9 @@ action :create do
   rootfs       = lxc_base + "/rootfs"
   lxc_conf     = lxc_base + "/config"
   lxc_opts     = ""
-  is_setup     = false
 
   if (new_resource.lxc_ver)
     lxc_opts = "-- --release=#{new_resource.lxc_ver}"
-  end
-
-
-  execute "check-exists-#{new_resource.lxc_name}" do
-    check = command "lxc-ls | grep #{new_resource.lxc_name}"
-    is_setup = true if check
   end
 
 
@@ -43,7 +36,6 @@ action :create do
   execute "backup-#{lxc_conf}" do
     command "mv #{lxc_conf} #{lxc_conf}.dist"
     not_if { ::File.exists?("#{lxc_conf}.dist") }
-    not_if { is_setup == true }
   end
 
 
@@ -74,7 +66,6 @@ action :create do
       # Reset MAC to the LXC generated one:
       node.set[:lxc_container][:node][:"#{new_resource.lxc_name}"][:hwaddr] = gen_mac
     end
-    not_if { is_setup == true }
   end
 
 
@@ -86,7 +77,6 @@ action :create do
     block do
       mac_addr = node[:lxc_container][:node][:"#{new_resource.lxc_name}"][:hwaddr]
     end
-    not_if { is_setup == true }
   end
 
 
@@ -102,14 +92,12 @@ action :create do
     })
 
     only_if { ::File.exists?("#{lxc_conf}.dist") }
-    not_if { is_setup == true }
   end
 
 
   execute "launch-lxc-#{new_resource.lxc_name}" do
     command "lxc-start -n #{new_resource.lxc_name} -d"
     not_if "lxc-ls --active | grep #{new_resource.lxc_name}"
-    not_if { is_setup == true }
   end
 end
 
@@ -118,6 +106,5 @@ action :destroy do
   execute "destroy-lxc-#{new_resource.lxc_name}" do
     command "lxc-stop -k -n #{new_resource.lxc_name}; lxc-destroy -n #{new_resource.lxc_name}"
     only_if "lxc-ls | grep #{new_resource.lxc_name}"
-    only_if { is_setup == true }
   end
 end

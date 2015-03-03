@@ -12,10 +12,10 @@ include_recipe "lxc_manage::packages"
 
 
 node[:lxc_container][:node].each do |name,vars|
-  if vars['active']
+  if vars['active'] and !vars['hwaddr']
     lxc_manage_node "manage-#{name}" do
       lxc_name name
-      lxc_ver  vars[:lxc_version] if vars[:lxc_version]
+      lxc_ver  vars["lxc_version"] if vars["lxc_version"]
       lxc_vars vars
       action :create
     end

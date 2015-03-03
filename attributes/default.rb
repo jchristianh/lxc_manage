@@ -18,11 +18,9 @@
 ###########################################################
 default['lxc_container']['node']['cnode6']['type']        = "centos"
 default['lxc_container']['node']['cnode6']['lxc_version'] = "7"
-default['lxc_container']['node']['cnode6']['hwaddr']      = "aa:aa:aa:aa:aa:aa"
 default['lxc_container']['node']['cnode6']['active']      = false
 
 
 default['lxc_container']['node']['cnode7']['type']        = "centos"
 default['lxc_container']['node']['cnode7']['lxc_version'] = "7"
-default['lxc_container']['node']['cnode7']['hwaddr']      = "aa:aa:aa:aa:aa:aa"
 default['lxc_container']['node']['cnode7']['active']      = false

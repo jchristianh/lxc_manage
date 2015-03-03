@@ -13,9 +13,10 @@ action :create do
   # Some vars to increase code readability
   def_domain   = node["lxc_container"]["def_domain"]
   lxc_base     = node["lxc_container"]["path"] + "/" + new_resource.lxc_name
+  lxc_type     = new_resource.lxc_vars['type'] || "centos"
   rootfs       = lxc_base + "/rootfs"
   lxc_conf     = lxc_base + "/config"
-  lxc_opts = ""
+  lxc_opts     = ""
 
   if (new_resource.lxc_ver)
     lxc_opts = "-- --release=#{new_resource.lxc_ver}"
@@ -23,7 +24,7 @@ action :create do
 
 
   execute "create-lxc-#{new_resource.lxc_name}" do
-    command "lxc-create -t #{new_resource.lxc_vars['type']} -n #{new_resource.lxc_name} #{lxc_opts}"
+    command "lxc-create -t #{lxc_type} -n #{new_resource.lxc_name} #{lxc_opts}"
     not_if "lxc-ls | grep #{new_resource.lxc_name}"
   end
 
@@ -39,20 +40,27 @@ action :create do
   end
 
 
-  # libraries/helper.rb
-  # This function will read in the hwaddr from the backup
-  # file (config.dist) created earlier, and update the
-  # appropriate node attribute
-  #set_mac_addr(new_resource.lxc_name)
-  # lxc.network.hwaddr = 86:D6:E3:18:2D:E0
-  # can generate via: openssl rand -hex 6 | sed 's/\(..\)/\1:/g; s/.$//'
+  # We use OpenSSL to generate a random MAC address for each node.
+  # LXC seems to prefix its generated addresses with 'fe', so
+  # that's what we're going to adhere to.
   ruby_block "mac_addr_#{new_resource.name}" do
     block do
-      read_mac = ::File.readlines("#{lxc_conf}.dist").grep(/^lxc.network.hwaddr/)
-      put_mac  = read_mac[0].split(/=/).join("").sub(/.*?\s+/, "").chomp
+      def generate_mac
+        mac = `openssl rand -hex 6`.chomp
+        mac = mac.scan(/.{1,2}/).join(":")
 
-      # Reset MAC to the LXC generated one:
-      node.set["lxc_container"]["node"]["#{new_resource.lxc_name}"]["hwaddr"] = put_mac
+        if (mac =~ /^fe:/)
+          return mac
+        else
+          generate_mac
+        end
+      end
+
+      gen_mac = generate_mac
+
+      # Set MAC to the LXC generated one:
+      node.set["lxc_container"]["node"]["#{new_resource.lxc_name}"]["hwaddr"] = gen_mac
+      node.save
     end
   end
 
@@ -86,6 +94,20 @@ action :create do
   execute "launch-lxc-#{new_resource.lxc_name}" do
     command "lxc-start -n #{new_resource.lxc_name} -d"
     not_if "lxc-ls --active | grep #{new_resource.lxc_name}"
+  end
+end
+
+
+action :stop do
+  execute "stopping-lxc-#{new_resource.name}" do
+    command "lxc-stop -n #{new_resource.lxc_name}"
+  end
+end
+
+
+action :start do
+  execute "stopping-lxc-#{new_resource.name}" do
+    command "lxc-start -n #{new_resource.lxc_name} -d"
   end
 end
 

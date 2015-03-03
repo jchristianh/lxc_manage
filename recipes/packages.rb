@@ -9,7 +9,7 @@
 
 
 # Package list to install:
-pkg_list = ['lxc','lxc-templates']
+pkg_list = ['lxc','lxc-templates','debootstrap']
 
 
 # If we're not running in the Production environment,

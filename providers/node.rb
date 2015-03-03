@@ -39,17 +39,11 @@ action :create do
   end
 
 
-  # libraries/helper.rb
-  # This function will read in the hwaddr from the backup
-  # file (config.dist) created earlier, and update the
-  # appropriate node attribute
-  #set_mac_addr(new_resource.lxc_name)
-  # lxc.network.hwaddr = 86:D6:E3:18:2D:E0
-  # can generate via: openssl rand -hex 6 | sed 's/\(..\)/\1:/g; s/.$//'
+  # We use OpenSSL to generate a random MAC address for each node.
+  # LXC seems to prefix its generated addresses with 'fe', so
+  # that's what we're going to adhere to.
   ruby_block "mac_addr_#{new_resource.name}" do
     block do
-      #read_mac = ::File.readlines("#{lxc_conf}.dist").grep(/^lxc.network.hwaddr/)
-      #put_mac  = read_mac[0].split(/=/).join("").sub(/.*?\s+/, "").chomp
       def generate_mac
         mac = `openssl rand -hex 6`.chomp
         mac = mac.scan(/.{1,2}/).join(":")
@@ -63,7 +57,7 @@ action :create do
 
       gen_mac = generate_mac
 
-      # Reset MAC to the LXC generated one:
+      # Set MAC to the LXC generated one:
       node.set["lxc_container"]["node"]["#{new_resource.lxc_name}"]["hwaddr"] = gen_mac
       node.save
     end

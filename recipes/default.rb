@@ -11,7 +11,7 @@
 include_recipe "lxc_manage::packages"
 
 
-node[:lxc_container][:node].each do |name,vars|
+node["lxc_container"]["node"].each do |name,vars|
   if vars['active'] and !vars['hwaddr']
     lxc_manage_node "manage-#{name}" do
       lxc_name name
@@ -19,6 +19,10 @@ node[:lxc_container][:node].each do |name,vars|
       lxc_vars vars
       action :create
     end
+  # We run destroy on those marked as false because we want
+  # to be tidy and cleanup after ourselves.
+  # Code may be added later to permit the stopping of nodes
+  # without destroying them. TBD.
   elsif vars['active'] == false
     lxc_manage_node "destroying-#{name}" do
       lxc_name name

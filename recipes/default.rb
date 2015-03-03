@@ -19,6 +19,18 @@ node["lxc_container"]["node"].each do |name,vars|
       lxc_vars vars
       action :create
     end
+  elsif vars['active'] == true and vars['run'] == true
+    lxc_manage_node "stop-#{name}" do
+      lxc_name name
+      action :start
+      not_if "lxc-ls --active | grep #{name}"
+    end
+  elsif vars['active'] == true and vars['run'] == false
+    lxc_manage_node "stop-#{name}" do
+      lxc_name name
+      action :stop
+      only_if "lxc-ls --active | grep #{name}"
+    end
   # We run destroy on those marked as false because we want
   # to be tidy and cleanup after ourselves.
   # Code may be added later to permit the stopping of nodes

@@ -19,7 +19,7 @@ node[:lxc_container][:node].each do |name,vars|
       lxc_vars vars
       action :create
     end
-  else
+  elsif vars['active'] == false
     lxc_manage_node "destroying-#{name}" do
       lxc_name name
       action :destroy

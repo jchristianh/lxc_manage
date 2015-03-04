@@ -18,6 +18,7 @@ action :create do
   lxc_conf     = lxc_base + "/config"
   lxc_opts     = ""
 
+
   if (new_resource.lxc_ver)
     lxc_opts = "-- --release=#{new_resource.lxc_ver}"
   end
@@ -29,11 +30,7 @@ action :create do
   end
 
 
-  # libraries/helper.rb
-  # LXC Create will create a default config. This function
-  # will backup the default config to the LXC path as config.dist
-  # so that we can read the hwaddr (mac address) later
-  #lxc_default_conf_backup(new_resource.lxc_name, node[:lxc_container][:path])
+  # Create a backup of the LXC generated config:
   execute "backup-#{lxc_conf}" do
     command "mv #{lxc_conf} #{lxc_conf}.dist"
     not_if { ::File.exists?("#{lxc_conf}.dist") }

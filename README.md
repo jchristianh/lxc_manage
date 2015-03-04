@@ -27,19 +27,7 @@ Attributes
     <td><tt>['lxc_container']['node']['NODE_NAME']['type']</tt></td>
     <td>String</td>
     <td>Name of LXC template</td>
-    <td><tt>Yes</tt></td>
-  </tr>
-  <tr>
-    <td><tt>['lxc_container']['node']['NODE_NAME']['lxc_version']</tt></td>
-    <td>String</td>
-    <td>Version of the LXC container (depdendant on template type)</td>
-    <td><tt>Yes</tt></td>
-  </tr>
-  <tr>
-    <td><tt>['lxc_container']['node']['NODE_NAME']['hwaddr']</tt></td>
-    <td>String</td>
-    <td>MAC Address of the node; Will be generated at run time</td>
-    <td><tt>Yes</tt></td>
+    <td><tt>Required</tt></td>
   </tr>
   <tr>
     <td><tt>['lxc_container']['node']['NODE_NAME']['active']</tt></td>
@@ -52,6 +40,18 @@ Attributes
     <td>Boolean</td>
     <td>Whether to run or stop the node; Needs to be created first</td>
     <td><tt>Required</tt></td>
+  </tr>
+  <tr>
+    <td><tt>['lxc_container']['node']['NODE_NAME']['lxc_version']</tt></td>
+    <td>String</td>
+    <td>Version of the LXC container (depdendant on template type)</td>
+    <td><tt>Yes</tt></td>
+  </tr>
+  <tr>
+    <td><tt>['lxc_container']['node']['NODE_NAME']['hwaddr']</tt></td>
+    <td>String</td>
+    <td>MAC Address of the node; Will be generated at run time</td>
+    <td><tt>Yes</tt></td>
   </tr>
 </table>
 

@@ -92,7 +92,7 @@ action :create do
   execute "launch-lxc-#{new_resource.lxc_name}" do
     command "lxc-start -n #{new_resource.lxc_name} -d"
     not_if "lxc-ls --active | grep #{new_resource.lxc_name}"
-    only_if lxc_run
+    only_if { lxc_run == true }
   end
 end
 

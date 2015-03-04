@@ -5,7 +5,7 @@ TODO: Lots
 
 Requirements
 ------------
-There are no outside requirements for this cookbook outside of having a host
+There are no outside requirements for this cookbook. You will only need a host
 capable of utilizing LXC (Linux Containers)
 
 e.g.

@@ -14,6 +14,7 @@ action :create do
   def_domain   = node["lxc_container"]["def_domain"]
   lxc_base     = node["lxc_container"]["path"] + "/" + new_resource.lxc_name
   lxc_type     = new_resource.lxc_vars['type'] || "centos"
+  lxc_run      = new_resource.lxc_vars['run'] || true
   rootfs       = lxc_base + "/rootfs"
   lxc_conf     = lxc_base + "/config"
   lxc_opts     = ""
@@ -91,6 +92,7 @@ action :create do
   execute "launch-lxc-#{new_resource.lxc_name}" do
     command "lxc-start -n #{new_resource.lxc_name} -d"
     not_if "lxc-ls --active | grep #{new_resource.lxc_name}"
+    only_if lxc_run
   end
 end
 

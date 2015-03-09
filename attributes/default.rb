@@ -32,7 +32,7 @@ default['lxc_container']['node']['cnode6']['group']           = "onboot"
 default['lxc_container']['node']['cnode6']['network'] = {
   "eth0" => {
     "ip_address" => "10.10.10.124",
-    "ip_cidr"     => "27",
+    "ip_cidr"    => "27",
     "gateway"    => "10.10.10.126"
   }
 }
@@ -49,7 +49,7 @@ default['lxc_container']['node']['cnode7']['group']           = "onboot"
 default['lxc_container']['node']['cnode7']['network'] = {
   "eth0" => {
     "ip_address" => "10.10.10.125",
-    "ip_cidr"     => "27",
+    "ip_cidr"    => "27",
     "gateway"    => "10.10.10.126"
   }
 }

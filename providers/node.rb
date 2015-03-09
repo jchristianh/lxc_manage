@@ -27,9 +27,9 @@ action :create do
   # Pull in network variables:
   # (nic device is static for now; will fix in a bit)
   network_device = "eth0"
-  ipaddr         = node['lxc_container']['node']['cnode6']['network']['eth0']['ip_address']
-  ipcidr         = node['lxc_container']['node']['cnode6']['network']['eth0']['ip_cidr']
-  gateway        = node['lxc_container']['node']['cnode6']['network']['eth0']['gateway']
+  ipaddr         = node['lxc_container']['node']["#{new_resource.lxc_name}"]['network']['eth0']['ip_address']
+  ipcidr         = node['lxc_container']['node']["#{new_resource.lxc_name}"]['network']['eth0']['ip_cidr']
+  gateway        = node['lxc_container']['node']["#{new_resource.lxc_name}"]['network']['eth0']['gateway']
 
 
   if (new_resource.lxc_ver)

@@ -82,13 +82,13 @@ action :create do
         :rootfs      => rootfs,
         :utsname     => new_resource.lxc_name + "." + def_domain,
         :hwaddr      => mac_addr,
-        :autostart   => node['lxc_container']['node']['cnode6']['autostart'],
-        :start_delay => node['lxc_container']['node']['cnode6']['startdelay'],
-        :start_order => node['lxc_container']['node']['cnode6']['startorder'],
-        :group       => node['lxc_container']['node']['cnode6']['group'],
-        :ipaddr      => node['lxc_container']['node']['cnode6']['ipaddr'],
-        :ipcidr      => node['lxc_container']['node']['cnode6']['ipcidr'],
-        :ipgateway   => node['lxc_container']['node']['cnode6']['ipgateway']
+        :autostart   => node['lxc_container']['node']["#{new_resource.lxc_name}"]['autostart'],
+        :start_delay => node['lxc_container']['node']["#{new_resource.lxc_name}"]['startdelay'],
+        :start_order => node['lxc_container']['node']["#{new_resource.lxc_name}"]['startorder'],
+        :group       => node['lxc_container']['node']["#{new_resource.lxc_name}"]['group'],
+        :ipaddr      => node['lxc_container']['node']["#{new_resource.lxc_name}"]['ipaddr'],
+        :ipcidr      => node['lxc_container']['node']["#{new_resource.lxc_name}"]['ipcidr'],
+        :ipgateway   => node['lxc_container']['node']["#{new_resource.lxc_name}"]['ipgateway']
       }
     })
 
@@ -112,7 +112,7 @@ end
 
 
 action :start do
-  execute "stopping-lxc-#{new_resource.name}" do
+  execute "starting-lxc-#{new_resource.name}" do
     command "lxc-start -n #{new_resource.lxc_name} -d"
   end
 end

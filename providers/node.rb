@@ -18,6 +18,18 @@ action :create do
   rootfs       = lxc_base + "/rootfs"
   lxc_conf     = lxc_base + "/config"
   lxc_opts     = ""
+  autostart    = node['lxc_container']['node']["#{new_resource.lxc_name}"]['autostart']
+  startdelay   = node['lxc_container']['node']["#{new_resource.lxc_name}"]['startdelay']
+  startorder   = node['lxc_container']['node']["#{new_resource.lxc_name}"]['startorder']
+  lxcgroup     = node['lxc_container']['node']["#{new_resource.lxc_name}"]['group']
+
+
+  # Pull in network variables:
+  # (nic device is static for now; will fix in a bit)
+  network_device = "eth0"
+  ipaddr         = node['lxc_container']['node']['cnode6']['network']['eth0']['ip_address']
+  ipcidr         = node['lxc_container']['node']['cnode6']['network']['eth0']['ip_cidr']
+  gateway        = node['lxc_container']['node']['cnode6']['network']['eth0']['gateway']
 
 
   if (new_resource.lxc_ver)
@@ -73,6 +85,20 @@ action :create do
     end
   end
 
+  template "#{lxc_base}/rootfs/etc/sysconfig/network-scripts/ifcfg-eth0" do
+    source "ifcfg.erb"
+
+    variables ( lazy {
+      {
+        :network_device => network_device,
+        :hwaddr         => mac_addr,
+        :ipaddr         => ipaddr,
+        :ipcidr         => ipcidr,
+        :ipgateway      => gateway
+      }
+    })
+  end
+
 
   template "#{lxc_conf}" do
     source "container_config.erb"
@@ -82,13 +108,10 @@ action :create do
         :rootfs      => rootfs,
         :utsname     => new_resource.lxc_name + "." + def_domain,
         :hwaddr      => mac_addr,
-        :autostart   => node['lxc_container']['node']["#{new_resource.lxc_name}"]['autostart'],
-        :start_delay => node['lxc_container']['node']["#{new_resource.lxc_name}"]['startdelay'],
-        :start_order => node['lxc_container']['node']["#{new_resource.lxc_name}"]['startorder'],
-        :group       => node['lxc_container']['node']["#{new_resource.lxc_name}"]['group'],
-        :ipaddr      => node['lxc_container']['node']["#{new_resource.lxc_name}"]['ipaddr'],
-        :ipcidr      => node['lxc_container']['node']["#{new_resource.lxc_name}"]['ipcidr'],
-        :ipgateway   => node['lxc_container']['node']["#{new_resource.lxc_name}"]['ipgateway']
+        :autostart   => autostart,
+        :start_delay => startdelay,
+        :start_order => startorder,
+        :group       => lxcgroup
       }
     })
 

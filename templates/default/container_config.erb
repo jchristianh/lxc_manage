@@ -87,8 +87,10 @@ lxc.network.flags        = up
 lxc.network.hwaddr       = <%= @hwaddr %>
 lxc.network.link         = br0
 lxc.network.name         = eth0
+<% if @ipaddr %>
 lxc.network.ipv4         = <%= @ipaddr %>/<%= @ipcidr %>
 lxc.network.ipv4.gateway = <%= @ipgateway %>
+<% end %>
 
 # Private network (isolated)
 #lxc.network.type = veth

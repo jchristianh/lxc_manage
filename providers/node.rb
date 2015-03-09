@@ -79,9 +79,16 @@ action :create do
 
     variables ( lazy {
       {
-        :rootfs  => rootfs,
-        :utsname => new_resource.lxc_name + "." + def_domain,
-        :hwaddr  => mac_addr
+        :rootfs      => rootfs,
+        :utsname     => new_resource.lxc_name + "." + def_domain,
+        :hwaddr      => mac_addr
+        :autostart   => node['lxc_container']['node']['cnode6']['autostart']
+        :start_delay => node['lxc_container']['node']['cnode6']['startdelay']
+        :start_order => node['lxc_container']['node']['cnode6']['startorder']
+        :group       => node['lxc_container']['node']['cnode6']['group']
+        :ipaddr      => node['lxc_container']['node']['cnode6']['ipaddr']
+        :ipcidr      => node['lxc_container']['node']['cnode6']['ipcidr']
+        :ipgateway   => node['lxc_container']['node']['cnode6']['ipgateway']
       }
     })
 

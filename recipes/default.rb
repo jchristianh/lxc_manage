@@ -12,7 +12,7 @@ include_recipe "lxc_manage::packages"
 
 
 node["lxc_container"]["node"].each do |name,vars|
-  if vars['active'] and !vars['hwaddr']
+  if vars['active'] and !vars['network']['hwaddr']
     lxc_manage_node "creating-#{name}" do
       lxc_name name
       lxc_ver  vars["lxc_version"] if vars["lxc_version"]

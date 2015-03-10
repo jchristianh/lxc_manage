@@ -19,8 +19,8 @@ action :create do
   lxc_conf     = lxc_base + "/config"
   lxc_opts     = ""
   autostart    = node['lxc_container']['node']["#{new_resource.lxc_name}"]['autostart']
-  startdelay   = node['lxc_container']['node']["#{new_resource.lxc_name}"]['startdelay']
-  startorder   = node['lxc_container']['node']["#{new_resource.lxc_name}"]['startorder']
+  startdelay   = node['lxc_container']['node']["#{new_resource.lxc_name}"]['startdelay'] || 0
+  startorder   = node['lxc_container']['node']["#{new_resource.lxc_name}"]['startorder'] || 1
   lxcgroup     = node['lxc_container']['node']["#{new_resource.lxc_name}"]['group']
 
 
@@ -55,21 +55,10 @@ action :create do
   # that's what we're going to adhere to.
   ruby_block "mac_addr_#{new_resource.name}" do
     block do
-      def generate_mac
-        mac = `openssl rand -hex 6`.chomp
-        mac = mac.scan(/.{1,2}/).join(":")
-
-        if (mac =~ /^fe:/)
-          return mac
-        else
-          generate_mac
-        end
-      end
-
       gen_mac = generate_mac
 
       # Set MAC to the LXC generated one:
-      node.set["lxc_container"]["node"]["#{new_resource.lxc_name}"]["hwaddr"] = gen_mac
+      node.set["lxc_container"]["node"]["#{new_resource.lxc_name}"]["network"]["hwaddr"] = gen_mac
       node.save
     end
   end
@@ -81,9 +70,10 @@ action :create do
   mac_addr = ""
   ruby_block "set_#{new_resource.lxc_name}_mac_addr" do
     block do
-      mac_addr = node["lxc_container"]["node"]["#{new_resource.lxc_name}"]["hwaddr"]
+      mac_addr = node["lxc_container"]["node"]["#{new_resource.lxc_name}"]["network"]["hwaddr"]
     end
   end
+
 
   template "#{lxc_base}/rootfs/etc/sysconfig/network-scripts/ifcfg-eth0" do
     source "ifcfg.erb"

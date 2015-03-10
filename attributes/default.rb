@@ -33,7 +33,8 @@ default['lxc_container']['node']['cnode6']['network'] = {
   "eth0" => {
     "ip_address" => "10.10.10.124",
     "ip_cidr"    => "27",
-    "gateway"    => "10.10.10.126"
+    "gateway"    => "10.10.10.126",
+    "hwaddr"     => ""
   }
 }
 
@@ -50,6 +51,7 @@ default['lxc_container']['node']['cnode7']['network'] = {
   "eth0" => {
     "ip_address" => "10.10.10.125",
     "ip_cidr"    => "27",
-    "gateway"    => "10.10.10.126"
+    "gateway"    => "10.10.10.126",
+    "hwaddr"     => ""
   }
 }

@@ -82,11 +82,14 @@ lxc.cgroup.devices.allow = c 10:200 rwm
 lxc.cgroup.devices.allow = c 1:1 rwm
 
 ## Public network (NATed to internet)
+<% @network.each do |dev,vars| %>
 lxc.network.type         = veth
 lxc.network.flags        = up
-lxc.network.hwaddr       = <%= @hwaddr %>
+lxc.network.hwaddr       = <%= @network[dev]["hwaddr"] %>
 lxc.network.link         = br0
-lxc.network.name         = eth0
+lxc.network.name         = <%= dev %>
+<% end %>
+
 
 # Private network (isolated)
 #lxc.network.type = veth

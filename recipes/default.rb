@@ -8,7 +8,7 @@
 #
 
 
-include_recipe "lxc_manage::packages"
+#include_recipe "lxc_manage::packages"
 
 
 node["lxc_container"]["node"].each do |name,vars|

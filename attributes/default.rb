@@ -28,6 +28,11 @@ default['lxc_container']['node']['cnode6']['network'] = {
     "ip_address" => "10.10.10.124",
     "ip_cidr"    => "27",
     "gateway"    => "10.10.10.126",
+  },
+  "eth1" => {
+    "ip_address" => "10.10.10.125",
+    "ip_cidr"    => "27",
+    "gateway"    => "10.10.10.126",
   }
 }
 
@@ -35,14 +40,14 @@ default['lxc_container']['node']['cnode6']['network'] = {
 default['lxc_container']['node']['cnode7']['type']            = "centos"
 default['lxc_container']['node']['cnode7']['lxc_version']     = "7"
 default['lxc_container']['node']['cnode7']['active']          = false
-default['lxc_container']['node']['cnode7']['run']             = false
-default['lxc_container']['node']['cnode7']['autostart']       = false
+default['lxc_container']['node']['cnode7']['run']             = true
+default['lxc_container']['node']['cnode7']['autostart']       = true
 default['lxc_container']['node']['cnode7']['startdelay']      = 10
 default['lxc_container']['node']['cnode7']['startorder']      = 2
 default['lxc_container']['node']['cnode7']['group']           = "onboot"
 default['lxc_container']['node']['cnode7']['network'] = {
   "eth0" => {
-    "ip_address" => "10.10.10.125",
+    "ip_address" => "10.10.10.121",
     "ip_cidr"    => "27",
     "gateway"    => "10.10.10.126",
   }

@@ -17,25 +17,12 @@ action :create do
   lxc_run      = new_resource.lxc_vars['run'] || false
   rootfs       = lxc_base + "/rootfs"
   lxc_conf     = lxc_base + "/config"
-  lxc_opts     = ""
+  lxc_opts     = ''
   autostart    = node['lxc_container']['node']["#{new_resource.lxc_name}"]['autostart']
   startdelay   = node['lxc_container']['node']["#{new_resource.lxc_name}"]['startdelay'] || 0
   startorder   = node['lxc_container']['node']["#{new_resource.lxc_name}"]['startorder'] || 1
   lxcgroup     = node['lxc_container']['node']["#{new_resource.lxc_name}"]['group']      || "ungrouped"
-
-
-  # Pull in network variables:
-  # (nic device is static for now; will fix in a bit)
-  #
-  # This is not going to work as written. Will re-work when I get home.
-  if (node['lxc_container']['node']["#{new_resource.lxc_name}"].has_key?("network"))
-    node['lxc_container']['node']["#{new_resource.lxc_name}"]['network'].each_with_index do |ip,cidr,gw,index|
-      network_device[index]="eth#{index}"
-      ipaddr[index]        = node['lxc_container']['node']["#{new_resource.lxc_name}"]['network']["eth#{index}"]['ip_address']
-      ipcidr[index]        = node['lxc_container']['node']["#{new_resource.lxc_name}"]['network']["eth#{index}"]['ip_cidr']
-      gateway[index]       = node['lxc_container']['node']["#{new_resource.lxc_name}"]['network']["eth#{index}"]['gateway']
-    end
-  end
+  mac_addr     = ''
 
 
   if (new_resource.lxc_ver)
@@ -60,48 +47,39 @@ action :create do
   # LXC seems to prefix its generated addresses with 'fe', so
   # that's what we're going to adhere to.
   #
-  # This is not going to work as written. Will re-work when I get home.
+  # This is not going to work as written.
   ruby_block "mac_addr_#{new_resource.name}" do
     block do
       if (node['lxc_container']['node']["#{new_resource.lxc_name}"].has_key?("network"))
-        node['lxc_container']['node']["#{new_resource.lxc_name}"]['network'].each_with_index do |index|
+        node['lxc_container']['node']["#{new_resource.lxc_name}"]['network'].each do |dev,vars|
           gen_mac = generate_mac
-          node['lxc_container']['node']["#{new_resource.lxc_name}"]['network']["eth#{index}"]['hwaddr'] = gen_mac
+          node.set['lxc_container']['node']["#{new_resource.lxc_name}"]['network']["#{dev}"]['hwaddr'] = gen_mac
+          node.save
         end
       else
         gen_mac = generate_mac
         node.set["lxc_container"]["node"]["#{new_resource.lxc_name}"]["network"]["eth0"]["hwaddr"] = gen_mac
+        node.save
       end
-    end
-    node.save
-  end
-
-
-  # The MAC address node attribute got re-set to a new value above
-  # we need to a re-read of that new value inside a ruby_block so
-  # that we can get the updated value to write out to our template
-  #
-  # NEDS REWRITE
-  ruby_block "set_#{new_resource.lxc_name}_mac_addr" do
-    block do
-      mac_addr = node["lxc_container"]["node"]["#{new_resource.lxc_name}"]["network"]["hwaddr"]
     end
   end
 
 
   if (node['lxc_container']['node']["#{new_resource.lxc_name}"].has_key?("network"))
-    template "#{lxc_base}/rootfs/etc/sysconfig/network-scripts/ifcfg-eth0" do
-      source "ifcfg.erb"
+    node['lxc_container']['node']["#{new_resource.lxc_name}"]['network'].each do |dev,vars|
+      template "#{lxc_base}/rootfs/etc/sysconfig/network-scripts/ifcfg-#{dev}" do
+        source "ifcfg.erb"
 
-      variables ( lazy {
-        {
-          :network_device => network_device,
-          :hwaddr         => mac_addr,
-          :ipaddr         => ipaddr,
-          :ipcidr         => ipcidr,
-          :ipgateway      => gateway
-        }
-      })
+        variables ( lazy {
+          {
+            :network_device => dev,
+            :hwaddr         => node['lxc_container']['node']["#{new_resource.lxc_name}"]['network']["#{dev}"]["hwaddr"],
+            :ipaddr         => node['lxc_container']['node']["#{new_resource.lxc_name}"]['network']["#{dev}"]["ip_address"],
+            :ipcidr         => node['lxc_container']['node']["#{new_resource.lxc_name}"]['network']["#{dev}"]["ip_cidr"],
+            :ipgateway      => node['lxc_container']['node']["#{new_resource.lxc_name}"]['network']["#{dev}"]["gateway"]
+          }
+        })
+      end
     end
   end
 
@@ -113,7 +91,7 @@ action :create do
       {
         :rootfs      => rootfs,
         :utsname     => new_resource.lxc_name + "." + def_domain,
-        :hwaddr      => mac_addr,
+        :network     => node['lxc_container']['node']["#{new_resource.lxc_name}"]['network'],
         :autostart   => autostart,
         :start_delay => startdelay,
         :start_order => startorder,
@@ -123,16 +101,6 @@ action :create do
 
     only_if { ::File.exists?("#{lxc_conf}.dist") }
   end
-
-
-# Start is being called in recipes/default.rb after creation
-# so this should be redundant code. Will verify.
-#
-#  execute "launch-lxc-#{new_resource.lxc_name}" do
-#    command "lxc-start -n #{new_resource.lxc_name} -d"
-#    not_if "lxc-ls --active | grep #{new_resource.lxc_name}"
-#    only_if { lxc_run == true }
-#  end
 end
 
 

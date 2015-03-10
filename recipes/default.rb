@@ -20,7 +20,7 @@ node["lxc_container"]["node"].each do |name,vars|
       action :create
       not_if "lxc-ls | grep #{name}"
     end
-    lxc_manage_node "stop-#{name}" do
+    lxc_manage_node "start-#{name}" do
       lxc_name name
       action :start
       not_if "lxc-ls --active | grep #{name}"

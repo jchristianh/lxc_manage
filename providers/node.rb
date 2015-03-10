@@ -21,7 +21,7 @@ action :create do
   autostart    = node['lxc_container']['node']["#{new_resource.lxc_name}"]['autostart']
   startdelay   = node['lxc_container']['node']["#{new_resource.lxc_name}"]['startdelay'] || 0
   startorder   = node['lxc_container']['node']["#{new_resource.lxc_name}"]['startorder'] || 1
-  lxcgroup     = node['lxc_container']['node']["#{new_resource.lxc_name}"]['group']
+  lxcgroup     = node['lxc_container']['node']["#{new_resource.lxc_name}"]['group']      || "ungrouped"
 
 
   # Pull in network variables:

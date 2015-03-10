@@ -26,11 +26,15 @@ action :create do
 
   # Pull in network variables:
   # (nic device is static for now; will fix in a bit)
+  #
+  # This is not going to work as written. Will re-work when I get home.
   if (node['lxc_container']['node']["#{new_resource.lxc_name}"].has_key?("network"))
-    network_device = "eth0"
-    ipaddr         = node['lxc_container']['node']["#{new_resource.lxc_name}"]['network']['eth0']['ip_address']
-    ipcidr         = node['lxc_container']['node']["#{new_resource.lxc_name}"]['network']['eth0']['ip_cidr']
-    gateway        = node['lxc_container']['node']["#{new_resource.lxc_name}"]['network']['eth0']['gateway']
+    node['lxc_container']['node']["#{new_resource.lxc_name}"]['network'].each_with_index do |ip,cidr,gw,index|
+      network_device[index]="eth#{index}"
+      ipaddr[index]        = node['lxc_container']['node']["#{new_resource.lxc_name}"]['network']["eth#{index}"]['ip_address']
+      ipcidr[index]        = node['lxc_container']['node']["#{new_resource.lxc_name}"]['network']["eth#{index}"]['ip_cidr']
+      gateway[index]       = node['lxc_container']['node']["#{new_resource.lxc_name}"]['network']["eth#{index}"]['gateway']
+    end
   end
 
 
@@ -55,21 +59,29 @@ action :create do
   # We use OpenSSL to generate a random MAC address for each node.
   # LXC seems to prefix its generated addresses with 'fe', so
   # that's what we're going to adhere to.
+  #
+  # This is not going to work as written. Will re-work when I get home.
   ruby_block "mac_addr_#{new_resource.name}" do
     block do
-      gen_mac = generate_mac
-
-      # Set MAC to the LXC generated one:
-      node.set["lxc_container"]["node"]["#{new_resource.lxc_name}"]["network"]["hwaddr"] = gen_mac
-      node.save
+      if (node['lxc_container']['node']["#{new_resource.lxc_name}"].has_key?("network"))
+        node['lxc_container']['node']["#{new_resource.lxc_name}"]['network'].each_with_index do |index|
+          gen_mac = generate_mac
+          node['lxc_container']['node']["#{new_resource.lxc_name}"]['network']["eth#{index}"]['hwaddr'] = gen_mac
+        end
+      else
+        gen_mac = generate_mac
+        node.set["lxc_container"]["node"]["#{new_resource.lxc_name}"]["network"]["eth0"]["hwaddr"] = gen_mac
+      end
     end
+    node.save
   end
 
 
   # The MAC address node attribute got re-set to a new value above
   # we need to a re-read of that new value inside a ruby_block so
   # that we can get the updated value to write out to our template
-  mac_addr = ""
+  #
+  # NEDS REWRITE
   ruby_block "set_#{new_resource.lxc_name}_mac_addr" do
     block do
       mac_addr = node["lxc_container"]["node"]["#{new_resource.lxc_name}"]["network"]["hwaddr"]
@@ -113,11 +125,14 @@ action :create do
   end
 
 
-  execute "launch-lxc-#{new_resource.lxc_name}" do
-    command "lxc-start -n #{new_resource.lxc_name} -d"
-    not_if "lxc-ls --active | grep #{new_resource.lxc_name}"
-    only_if { lxc_run == true }
-  end
+# Start is being called in recipes/default.rb after creation
+# so this should be redundant code. Will verify.
+#
+#  execute "launch-lxc-#{new_resource.lxc_name}" do
+#    command "lxc-start -n #{new_resource.lxc_name} -d"
+#    not_if "lxc-ls --active | grep #{new_resource.lxc_name}"
+#    only_if { lxc_run == true }
+#  end
 end
 
 

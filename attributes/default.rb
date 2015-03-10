@@ -13,18 +13,12 @@ default['lxc_container']['path']       = "/var/lib/lxc"
 default['lxc_container']['def_domain'] = "thezengarden.net"
 
 
-# Node definitions:
-#
-# cnode6 = container name/hostname
-# type   = lxc template name
-# lxc_version = image version
-# hwaddr = can put anything here; mac will be auto generated
-# active = true/false; true creates; false destroys
+# This will be re-documented soon...
 ###########################################################
 default['lxc_container']['node']['cnode6']['type']            = "centos"
 default['lxc_container']['node']['cnode6']['lxc_version']     = "7"
-default['lxc_container']['node']['cnode6']['active']          = false
-default['lxc_container']['node']['cnode6']['run']             = false
+default['lxc_container']['node']['cnode6']['active']          = true
+default['lxc_container']['node']['cnode6']['run']             = true
 default['lxc_container']['node']['cnode6']['autostart']       = true
 default['lxc_container']['node']['cnode6']['startdelay']      = 10
 default['lxc_container']['node']['cnode6']['startorder']      = 1
@@ -34,7 +28,6 @@ default['lxc_container']['node']['cnode6']['network'] = {
     "ip_address" => "10.10.10.124",
     "ip_cidr"    => "27",
     "gateway"    => "10.10.10.126",
-    "hwaddr"     => ""
   }
 }
 
@@ -52,6 +45,5 @@ default['lxc_container']['node']['cnode7']['network'] = {
     "ip_address" => "10.10.10.125",
     "ip_cidr"    => "27",
     "gateway"    => "10.10.10.126",
-    "hwaddr"     => ""
   }
 }

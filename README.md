@@ -1,47 +1,66 @@
 lxc_manage Cookbook
 ===================
-TODO: Enter the cookbook description here.
+TODO: Lots
 
-e.g.
-This cookbook makes your favorite breakfast sandwich.
 
 Requirements
 ------------
-TODO: List your cookbook requirements. Be sure to include any requirements this cookbook has on platforms, libraries, other cookbooks, packages, operating systems, etc.
+There are no outside requirements for this cookbook. You will only need a host
+capable of utilizing LXC (Linux Containers)
 
 e.g.
 #### packages
-- `toaster` - lxc_manage needs toaster to brown your bagel.
+- `lxc` - Linux Resource Containers
+- `lxc-templates` - Templates for lxc
 
 Attributes
 ----------
-TODO: List your cookbook attributes here.
-
-e.g.
 #### lxc_manage::default
 <table>
   <tr>
     <th>Key</th>
     <th>Type</th>
     <th>Description</th>
-    <th>Default</th>
+    <th>Optional</th>
   </tr>
   <tr>
-    <td><tt>['lxc_manage']['bacon']</tt></td>
+    <td><tt>['lxc_container']['node']['NODE_NAME']['type']</tt></td>
+    <td>String</td>
+    <td>Name of LXC template</td>
+    <td><tt>Required</tt></td>
+  </tr>
+  <tr>
+    <td><tt>['lxc_container']['node']['NODE_NAME']['active']</tt></td>
     <td>Boolean</td>
-    <td>whether to include bacon</td>
-    <td><tt>true</tt></td>
+    <td>Whether to create/destroy the node</td>
+    <td><tt>Required</tt></td>
+  </tr>
+  <tr>
+    <td><tt>['lxc_container']['node']['NODE_NAME']['run']</tt></td>
+    <td>Boolean</td>
+    <td>Whether to run or stop the node; Needs to be created first</td>
+    <td><tt>Required</tt></td>
+  </tr>
+  <tr>
+    <td><tt>['lxc_container']['node']['NODE_NAME']['lxc_version']</tt></td>
+    <td>String</td>
+    <td>Version of the LXC container (depdendant on template type)</td>
+    <td><tt>Yes</tt></td>
+  </tr>
+  <tr>
+    <td><tt>['lxc_container']['node']['NODE_NAME']['hwaddr']</tt></td>
+    <td>String</td>
+    <td>MAC Address of the node; Will be generated at run time</td>
+    <td><tt>Yes</tt></td>
   </tr>
 </table>
 
 Usage
 -----
 #### lxc_manage::default
-TODO: Write usage instructions for each cookbook.
+Include recipe in your node's run list, and run chef-client.
 
 e.g.
-Just include `lxc_manage` in your node's `run_list`:
-
 ```json
 {
   "name":"my_node",
@@ -53,9 +72,6 @@ Just include `lxc_manage` in your node's `run_list`:
 
 Contributing
 ------------
-TODO: (optional) If this is a public cookbook, detail the process for contributing. If this is a private cookbook, remove this section.
-
-e.g.
 1. Fork the repository on Github
 2. Create a named feature branch (like `add_component_x`)
 3. Write your change
@@ -65,4 +81,5 @@ e.g.
 
 License and Authors
 -------------------
-Authors: TODO: List authors
+Authors:
+  Chris Hammer (chris.hammer@gmail.com)

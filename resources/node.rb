@@ -8,7 +8,7 @@
 #
 
 
-actions :create, :destroy
+actions :create, :destroy, :stop, :start
 
 attribute :name,     :name_attribute => true
 attribute :lxc_name, :kind_of        => String, :required => true

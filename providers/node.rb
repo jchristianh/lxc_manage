@@ -26,10 +26,12 @@ action :create do
 
   # Pull in network variables:
   # (nic device is static for now; will fix in a bit)
-  network_device = "eth0"
-  ipaddr         = node['lxc_container']['node']["#{new_resource.lxc_name}"]['network']['eth0']['ip_address']
-  ipcidr         = node['lxc_container']['node']["#{new_resource.lxc_name}"]['network']['eth0']['ip_cidr']
-  gateway        = node['lxc_container']['node']["#{new_resource.lxc_name}"]['network']['eth0']['gateway']
+  if (node['lxc_container']['node']["#{new_resource.lxc_name}"].has_key?("network"))
+    network_device = "eth0"
+    ipaddr         = node['lxc_container']['node']["#{new_resource.lxc_name}"]['network']['eth0']['ip_address']
+    ipcidr         = node['lxc_container']['node']["#{new_resource.lxc_name}"]['network']['eth0']['ip_cidr']
+    gateway        = node['lxc_container']['node']["#{new_resource.lxc_name}"]['network']['eth0']['gateway']
+  end
 
 
   if (new_resource.lxc_ver)
@@ -75,18 +77,20 @@ action :create do
   end
 
 
-  template "#{lxc_base}/rootfs/etc/sysconfig/network-scripts/ifcfg-eth0" do
-    source "ifcfg.erb"
+  if (node['lxc_container']['node']["#{new_resource.lxc_name}"].has_key?("network"))
+    template "#{lxc_base}/rootfs/etc/sysconfig/network-scripts/ifcfg-eth0" do
+      source "ifcfg.erb"
 
-    variables ( lazy {
-      {
-        :network_device => network_device,
-        :hwaddr         => mac_addr,
-        :ipaddr         => ipaddr,
-        :ipcidr         => ipcidr,
-        :ipgateway      => gateway
-      }
-    })
+      variables ( lazy {
+        {
+          :network_device => network_device,
+          :hwaddr         => mac_addr,
+          :ipaddr         => ipaddr,
+          :ipcidr         => ipcidr,
+          :ipgateway      => gateway
+        }
+      })
+    end
   end
 
 

@@ -22,7 +22,7 @@ lxc_nodes.each do |lxc_node|
       action :create
       not_if "lxc-ls | grep #{lxc_node['id']}"
     end
-    if vars['run'] == false
+    if lxc_node['run'] == false
       lxc_manage_node "stop-#{lxc_node['id']}" do
         lxc_name lxc_node['id']
         action :stop

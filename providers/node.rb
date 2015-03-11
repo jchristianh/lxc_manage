@@ -89,7 +89,7 @@ action :create do
     variables ( lazy {
       {
         :rootfs       => rootfs,
-        :utsname_pre  => new_resource.lxc_name
+        :utsname_pre  => new_resource.lxc_name,
         :utsname_post => def_domain,
         :network      => new_resource.lxc_vars['network'],
         :autostart    => autostart,

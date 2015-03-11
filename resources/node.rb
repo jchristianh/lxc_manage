@@ -8,9 +8,10 @@
 #
 
 
-actions :create, :destroy, :stop, :start
+actions :create, :destroy, :stop, :start, :update_conf
+default_action :create
 
 attribute :name,     :name_attribute => true
 attribute :lxc_name, :kind_of        => String, :required => true
 attribute :lxc_ver,  :kind_of        => String
-attribute :lxc_vars, :kind_of        => Hash
+attribute :lxc_vars, :kind_of        => Object

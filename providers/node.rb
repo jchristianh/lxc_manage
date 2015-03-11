@@ -13,8 +13,9 @@ action :create do
   # Some vars to increase code readability
   def_domain   = node["lxc_container"]["def_domain"]
   lxc_base     = node["lxc_container"]["path"] + "/" + new_resource.lxc_name
-  lxc_type     = new_resource.lxc_vars['type'] || "centos"
-  lxc_run      = new_resource.lxc_vars['run'] || false
+  lxc_type     = new_resource.lxc_vars['type']    || "centos"
+  lxc_ver      = new_resource.lxc_vars['version'] || false
+  lxc_run      = new_resource.lxc_vars['run']     || false
   rootfs       = lxc_base + "/rootfs"
   lxc_conf     = lxc_base + "/config"
   lxc_opts     = ''
@@ -24,8 +25,8 @@ action :create do
   lxcgroup     = new_resource.lxc_vars['group']      || "ungrouped"
 
 
-  if (new_resource.lxc_ver)
-    lxc_opts = "-- --release=#{new_resource.lxc_ver}"
+  if (lxc_ver)
+    lxc_opts = "-- --release=#{lxc_ver}"
   end
 
 
@@ -42,9 +43,6 @@ action :create do
   end
 
 
-  # We use OpenSSL to generate a random MAC address for each node.
-  # LXC seems to prefix its generated addresses with 'fe', so
-  # that's what we're going to adhere to.
   ruby_block "mac_addr_#{new_resource.name}" do
     block do
       if (new_resource.lxc_vars.has_key?("network"))
@@ -79,6 +77,82 @@ action :create do
       end
     end
 
+
+    if (lxc_type == "centos" && (lxc_ver == false || lxc_ver == "7"))
+      cookbook_file "#{lxc_base}/rootfs/etc/sysctl.d/99-rp_filter.conf" do
+        source "99-rp_filter.conf"
+        owner  "root"
+        group  "root"
+        mode   "0644"
+      end
+    end
+  end
+
+
+  template "#{lxc_conf}" do
+    source "container_config.erb"
+
+    variables ( lazy {
+      {
+        :rootfs       => rootfs,
+        :utsname_pre  => new_resource.lxc_name,
+        :utsname_post => def_domain,
+        :network      => new_resource.lxc_vars['network'],
+        :autostart    => autostart,
+        :start_delay  => startdelay,
+        :start_order  => startorder,
+        :group        => lxcgroup
+      }
+    })
+
+    only_if { ::File.exists?("#{lxc_conf}.dist") }
+  end
+end
+
+
+action :update_conf do
+  def_domain   = node["lxc_container"]["def_domain"]
+  lxc_base     = node["lxc_container"]["path"] + "/" + new_resource.lxc_name
+  lxc_type     = new_resource.lxc_vars['type']    || "centos"
+  lxc_ver      = new_resource.lxc_vars['version'] || false
+  lxc_run      = new_resource.lxc_vars['run']     || false
+  rootfs       = lxc_base + "/rootfs"
+  lxc_conf     = lxc_base + "/config"
+  lxc_opts     = ''
+  autostart    = new_resource.lxc_vars['autostart']
+  startdelay   = new_resource.lxc_vars['startdelay'] || 0
+  startorder   = new_resource.lxc_vars['startorder'] || 1
+  lxcgroup     = new_resource.lxc_vars['group']      || "ungrouped"
+
+
+  if (new_resource.lxc_vars.has_key?("network"))
+    new_resource.lxc_vars['network'].each do |dev,vars|
+      template "#{lxc_base}/rootfs/etc/sysconfig/network-scripts/ifcfg-#{dev}" do
+        source "ifcfg.erb"
+
+        variables ( lazy {
+          {
+            :network_device => dev,
+            :hwaddr         => node["lxc_container"]["node"]["#{new_resource.lxc_name}"]["network"]["#{dev}"]["hwaddr"],
+            :ipaddr         => vars['ip'],
+            :ipcidr         => vars['cidr'],
+            :ipgateway      => vars['gw']
+          }
+        })
+      end
+    end
+  else
+    template "#{lxc_base}/rootfs/etc/sysconfig/network-scripts/ifcfg-eth0" do
+      source "ifcfg.erb"
+
+      variables ({
+        :lxc_name => new_resource.lxc_name
+      })
+    end
+  end
+
+
+  if (lxc_type == "centos" && (lxc_ver == false || lxc_ver == "7"))
     cookbook_file "#{lxc_base}/rootfs/etc/sysctl.d/99-rp_filter.conf" do
       source "99-rp_filter.conf"
       owner  "root"
@@ -106,6 +180,7 @@ action :create do
 
     only_if { ::File.exists?("#{lxc_conf}.dist") }
   end
+
 end
 
 

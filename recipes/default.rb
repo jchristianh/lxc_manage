@@ -8,7 +8,9 @@
 #
 
 
-#include_recipe "lxc_manage::packages"
+# Install LXC Packages:
+include_recipe "lxc_manage::packages"
+
 
 # Pull list of nodes from the data bag:
 lxc_nodes = search(:lxc_nodes, 'id:*')
@@ -17,7 +19,7 @@ lxc_nodes.each do |lxc_node|
   if lxc_node['active']
     lxc_manage_node "creating-#{lxc_node['id']}" do
       lxc_name lxc_node['id']
-      lxc_ver  lxc_node["lxc_version"] if lxc_node["lxc_version"]
+      lxc_ver  lxc_node['version'] if lxc_node['version']
       lxc_vars lxc_node
       action :create
       not_if "lxc-ls | grep #{lxc_node['id']}"
@@ -30,6 +32,14 @@ lxc_nodes.each do |lxc_node|
         only_if "lxc-ls --active | grep #{lxc_node['id']}"
       end
     else
+      lxc_manage_node "update-conf-#{lxc_node['id']}" do
+        lxc_name lxc_node['id']
+        lxc_ver  lxc_node['version'] if lxc_node['version']
+        lxc_vars lxc_node
+        action :update_conf
+        only_if "lxc-ls | grep #{lxc_node['id']}"
+        not_if "lxc-ls --active | grep #{lxc_node['id']}"
+      end
       lxc_manage_node "start-#{lxc_node['id']}" do
         lxc_name lxc_node['id']
         action :start

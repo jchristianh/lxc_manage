@@ -1,3 +1,4 @@
+<% if @network_device %>
 NAME=<%= @network_device %>
 TYPE=Ethernet
 BOOTPROTO=static
@@ -7,3 +8,13 @@ HWADDR=<%= @hwaddr %>
 IPADDR=<%= @ipaddr %>
 PREFIX=<%= @ipcidr %>
 GATEWAY=<%= @ipgateway %>
+<% else %>
+DEVICE=eth0
+BOOTPROTO=dhcp
+ONBOOT=yes
+HOSTNAME=
+NM_CONTROLLED=no
+TYPE=Ethernet
+MTU=
+DHCP_HOSTNAME=<%= @lxc_name %>
+<% end %>

@@ -85,7 +85,7 @@ lxc.cgroup.devices.allow = c 1:1 rwm
 <% @network.each do |dev,vars| %>
 lxc.network.type         = <%= @network[dev]["type"] %>
 lxc.network.flags        = up
-lxc.network.hwaddr       = <%= @node["lxc_container"]["node"]["#{utsname_pre}"]["network"]["#{dev}"]["hwaddr"] %>
+lxc.network.hwaddr       = <%= @node["lxc_container"]["node"]["#{@utsname_pre}"]["network"]["#{dev}"]["hwaddr"] %>
 lxc.network.link         = <%= @network[dev]["link"] %>
 lxc.network.name         = <%= dev %>
 <% end %>

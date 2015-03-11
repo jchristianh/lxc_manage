@@ -72,7 +72,7 @@ action :create do
         variables ( lazy {
           {
             :network_device => dev,
-            :hwaddr         => new_resource.lxc_vars['network']["#{dev}"]["hwaddr"],
+            :hwaddr         => node["lxc_container"]["node"]["#{new_resource.lxc_name}"]["network"]["#{dev}"]["hwaddr"],
             :ipaddr         => new_resource.lxc_vars['network']["#{dev}"]["ip_address"],
             :ipcidr         => new_resource.lxc_vars['network']["#{dev}"]["ip_cidr"],
             :ipgateway      => new_resource.lxc_vars['network']["#{dev}"]["gateway"]

@@ -18,11 +18,10 @@ action :create do
   rootfs       = lxc_base + "/rootfs"
   lxc_conf     = lxc_base + "/config"
   lxc_opts     = ''
-  autostart    = node['lxc_container']['node']["#{new_resource.lxc_name}"]['autostart']
-  startdelay   = node['lxc_container']['node']["#{new_resource.lxc_name}"]['startdelay'] || 0
-  startorder   = node['lxc_container']['node']["#{new_resource.lxc_name}"]['startorder'] || 1
-  lxcgroup     = node['lxc_container']['node']["#{new_resource.lxc_name}"]['group']      || "ungrouped"
-  mac_addr     = ''
+  autostart    = new_resource.lxc_vars['autostart']
+  startdelay   = new_resource.lxc_vars['startdelay'] || 0
+  startorder   = new_resource.lxc_vars['startorder'] || 1
+  lxcgroup     = new_resource.lxc_vars['group']      || "ungrouped"
 
 
   if (new_resource.lxc_ver)
@@ -50,8 +49,8 @@ action :create do
   # This is not going to work as written.
   ruby_block "mac_addr_#{new_resource.name}" do
     block do
-      if (node['lxc_container']['node']["#{new_resource.lxc_name}"].has_key?("network"))
-        node['lxc_container']['node']["#{new_resource.lxc_name}"]['network'].each do |dev,vars|
+      if (new_resource.lxc_vars.has_key?("network"))
+        new_resource.lxc_vars['network'].each do |dev,vars|
           gen_mac = generate_mac
           node.set['lxc_container']['node']["#{new_resource.lxc_name}"]['network']["#{dev}"]['hwaddr'] = gen_mac
           node.save
@@ -65,18 +64,18 @@ action :create do
   end
 
 
-  if (node['lxc_container']['node']["#{new_resource.lxc_name}"].has_key?("network"))
-    node['lxc_container']['node']["#{new_resource.lxc_name}"]['network'].each do |dev,vars|
+  if (new_resource.lxc_vars.has_key?("network"))
+    new_resource.lxc_vars['network'].each do |dev,vars|
       template "#{lxc_base}/rootfs/etc/sysconfig/network-scripts/ifcfg-#{dev}" do
         source "ifcfg.erb"
 
         variables ( lazy {
           {
             :network_device => dev,
-            :hwaddr         => node['lxc_container']['node']["#{new_resource.lxc_name}"]['network']["#{dev}"]["hwaddr"],
-            :ipaddr         => node['lxc_container']['node']["#{new_resource.lxc_name}"]['network']["#{dev}"]["ip_address"],
-            :ipcidr         => node['lxc_container']['node']["#{new_resource.lxc_name}"]['network']["#{dev}"]["ip_cidr"],
-            :ipgateway      => node['lxc_container']['node']["#{new_resource.lxc_name}"]['network']["#{dev}"]["gateway"]
+            :hwaddr         => new_resource.lxc_vars['network']["#{dev}"]["hwaddr"],
+            :ipaddr         => new_resource.lxc_vars['network']["#{dev}"]["ip_address"],
+            :ipcidr         => new_resource.lxc_vars['network']["#{dev}"]["ip_cidr"],
+            :ipgateway      => new_resource.lxc_vars['network']["#{dev}"]["gateway"]
           }
         })
       end
@@ -91,7 +90,7 @@ action :create do
       {
         :rootfs      => rootfs,
         :utsname     => new_resource.lxc_name + "." + def_domain,
-        :network     => node['lxc_container']['node']["#{new_resource.lxc_name}"]['network'],
+        :network     => new_resource.lxc_vars['network'],
         :autostart   => autostart,
         :start_delay => startdelay,
         :start_order => startorder,

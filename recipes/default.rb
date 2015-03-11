@@ -1,5 +1,5 @@
 #
-# Cookbook Name:: lxc_manage
+# Cookbooklxc_node['id']:: lxc_manage
 # Recipe:: default
 #
 # Copyright 2015, Copyright (C) 2015 The Zen Garden. All rights reserved.
@@ -10,34 +10,36 @@
 
 #include_recipe "lxc_manage::packages"
 
+# Pull list of nodes from the data bag:
+lxc_nodes = search(:lxc_nodes, 'id:*')
 
-node["lxc_container"]["node"].each do |name,vars|
-  if vars['active']
-    lxc_manage_node "creating-#{name}" do
-      lxc_name name
-      lxc_ver  vars["lxc_version"] if vars["lxc_version"]
-      lxc_vars vars
+lxc_nodes.each do |lxc_node|
+  if lxc_node['active']
+    lxc_manage_node "creating-#{lxc_node['id']}" do
+      lxc_name lxc_node['id']
+      lxc_ver  lxc_node["lxc_version"] if lxc_node["lxc_version"]
+      lxc_vars lxc_node
       action :create
-      not_if "lxc-ls | grep #{name}"
+      not_if "lxc-ls | grep #{lxc_node['id']}"
     end
-    if vars['run'] == false
-      lxc_manage_node "stop-#{name}" do
-        lxc_name name
+    if lxc_node['run'] == false
+      lxc_manage_node "stop-#{lxc_node['id']}" do
+        lxc_name lxc_node['id']
         action :stop
-        only_if "lxc-ls | grep #{name}"
-        only_if "lxc-ls --active | grep #{name}"
+        only_if "lxc-ls | grep #{lxc_node['id']}"
+        only_if "lxc-ls --active | grep #{lxc_node['id']}"
       end
     else
-      lxc_manage_node "start-#{name}" do
-        lxc_name name
+      lxc_manage_node "start-#{lxc_node['id']}" do
+        lxc_name lxc_node['id']
         action :start
-        not_if "lxc-ls --active | grep #{name}"
-        only_if "lxc-ls | grep #{name}"
+        not_if "lxc-ls --active | grep #{lxc_node['id']}"
+        only_if "lxc-ls | grep #{lxc_node['id']}"
       end
     end
-  elsif vars['active'] == false
-    lxc_manage_node "destroying-#{name}" do
-      lxc_name name
+  elsif lxc_node['active'] == false
+    lxc_manage_node "destroying-#{lxc_node['id']}" do
+      lxc_name lxc_node['id']
       action :destroy
     end
   end

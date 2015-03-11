@@ -18,11 +18,10 @@ action :create do
   rootfs       = lxc_base + "/rootfs"
   lxc_conf     = lxc_base + "/config"
   lxc_opts     = ''
-  autostart    = node['lxc_container']['node']["#{new_resource.lxc_name}"]['autostart']
-  startdelay   = node['lxc_container']['node']["#{new_resource.lxc_name}"]['startdelay'] || 0
-  startorder   = node['lxc_container']['node']["#{new_resource.lxc_name}"]['startorder'] || 1
-  lxcgroup     = node['lxc_container']['node']["#{new_resource.lxc_name}"]['group']      || "ungrouped"
-  mac_addr     = ''
+  autostart    = new_resource.lxc_vars['autostart']
+  startdelay   = new_resource.lxc_vars['startdelay'] || 0
+  startorder   = new_resource.lxc_vars['startorder'] || 1
+  lxcgroup     = new_resource.lxc_vars['group']      || "ungrouped"
 
 
   if (new_resource.lxc_ver)
@@ -46,12 +45,10 @@ action :create do
   # We use OpenSSL to generate a random MAC address for each node.
   # LXC seems to prefix its generated addresses with 'fe', so
   # that's what we're going to adhere to.
-  #
-  # This is not going to work as written.
   ruby_block "mac_addr_#{new_resource.name}" do
     block do
-      if (node['lxc_container']['node']["#{new_resource.lxc_name}"].has_key?("network"))
-        node['lxc_container']['node']["#{new_resource.lxc_name}"]['network'].each do |dev,vars|
+      if (new_resource.lxc_vars.has_key?("network"))
+        new_resource.lxc_vars['network'].each do |dev,vars|
           gen_mac = generate_mac
           node.set['lxc_container']['node']["#{new_resource.lxc_name}"]['network']["#{dev}"]['hwaddr'] = gen_mac
           node.save
@@ -65,21 +62,28 @@ action :create do
   end
 
 
-  if (node['lxc_container']['node']["#{new_resource.lxc_name}"].has_key?("network"))
-    node['lxc_container']['node']["#{new_resource.lxc_name}"]['network'].each do |dev,vars|
+  if (new_resource.lxc_vars.has_key?("network"))
+    new_resource.lxc_vars['network'].each do |dev,vars|
       template "#{lxc_base}/rootfs/etc/sysconfig/network-scripts/ifcfg-#{dev}" do
         source "ifcfg.erb"
 
         variables ( lazy {
           {
             :network_device => dev,
-            :hwaddr         => node['lxc_container']['node']["#{new_resource.lxc_name}"]['network']["#{dev}"]["hwaddr"],
-            :ipaddr         => node['lxc_container']['node']["#{new_resource.lxc_name}"]['network']["#{dev}"]["ip_address"],
-            :ipcidr         => node['lxc_container']['node']["#{new_resource.lxc_name}"]['network']["#{dev}"]["ip_cidr"],
-            :ipgateway      => node['lxc_container']['node']["#{new_resource.lxc_name}"]['network']["#{dev}"]["gateway"]
+            :hwaddr         => node["lxc_container"]["node"]["#{new_resource.lxc_name}"]["network"]["#{dev}"]["hwaddr"],
+            :ipaddr         => vars['ip'],
+            :ipcidr         => vars['cidr'],
+            :ipgateway      => vars['gw']
           }
         })
       end
+    end
+
+    cookbook_file "#{lxc_base}/rootfs/etc/sysctl.d/99-rp_filter.conf" do
+      source "99-rp_filter.conf"
+      owner  "root"
+      group  "root"
+      mode   "0644"
     end
   end
 
@@ -89,13 +93,14 @@ action :create do
 
     variables ( lazy {
       {
-        :rootfs      => rootfs,
-        :utsname     => new_resource.lxc_name + "." + def_domain,
-        :network     => node['lxc_container']['node']["#{new_resource.lxc_name}"]['network'],
-        :autostart   => autostart,
-        :start_delay => startdelay,
-        :start_order => startorder,
-        :group       => lxcgroup
+        :rootfs       => rootfs,
+        :utsname_pre  => new_resource.lxc_name,
+        :utsname_post => def_domain,
+        :network      => new_resource.lxc_vars['network'],
+        :autostart    => autostart,
+        :start_delay  => startdelay,
+        :start_order  => startorder,
+        :group        => lxcgroup
       }
     })
 
@@ -123,4 +128,6 @@ action :destroy do
     command "lxc-stop -k -n #{new_resource.lxc_name}; lxc-destroy -n #{new_resource.lxc_name}"
     only_if "lxc-ls | grep #{new_resource.lxc_name}"
   end
+
+  node.rm("lxc_container", "node", "#{new_resource.lxc_name}")
 end

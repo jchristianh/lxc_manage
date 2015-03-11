@@ -45,8 +45,6 @@ action :create do
   # We use OpenSSL to generate a random MAC address for each node.
   # LXC seems to prefix its generated addresses with 'fe', so
   # that's what we're going to adhere to.
-  #
-  # This is not going to work as written.
   ruby_block "mac_addr_#{new_resource.name}" do
     block do
       if (new_resource.lxc_vars.has_key?("network"))
@@ -73,12 +71,19 @@ action :create do
           {
             :network_device => dev,
             :hwaddr         => node["lxc_container"]["node"]["#{new_resource.lxc_name}"]["network"]["#{dev}"]["hwaddr"],
-            :ipaddr         => new_resource.lxc_vars['network']["#{dev}"]["ip_address"],
-            :ipcidr         => new_resource.lxc_vars['network']["#{dev}"]["ip_cidr"],
-            :ipgateway      => new_resource.lxc_vars['network']["#{dev}"]["gateway"]
+            :ipaddr         => vars['ip'],
+            :ipcidr         => vars['cidr'],
+            :ipgateway      => vars['gw']
           }
         })
       end
+    end
+
+    cookbook_file "#{lxc_base}/rootfs/etc/sysctl.d/99-rp_filter.conf" do
+      source "99-rp_filter.conf"
+      owner  "root"
+      group  "root"
+      mode   "0644"
     end
   end
 
@@ -123,4 +128,6 @@ action :destroy do
     command "lxc-stop -k -n #{new_resource.lxc_name}; lxc-destroy -n #{new_resource.lxc_name}"
     only_if "lxc-ls | grep #{new_resource.lxc_name}"
   end
+
+  node.rm("lxc_container", "node", "#{new_resource.lxc_name}")
 end

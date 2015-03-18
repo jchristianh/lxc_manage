@@ -13,9 +13,12 @@ include_recipe "lxc_manage::packages"
 
 
 # Pull list of nodes from the data bag:
-lxc_nodes = search(:lxc_nodes, 'id:*')
+# lxc_nodes = search(:lxc_nodes, 'id:*')
 
-lxc_nodes.each do |lxc_node|
+
+node['lxc_container']['nodes'].each do |ln|
+  lxc_node = data_bag_item("lxc_nodes", ln)
+
   if lxc_node['active']
     lxc_manage_node "creating-#{lxc_node['id']}" do
       lxc_name lxc_node['id']

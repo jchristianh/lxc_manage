@@ -25,12 +25,12 @@ end
 # a base set of packages that should be on every node of ours:
 if pkg_list.class == Array
   pkg_list.each do |pkg|
-    package "#{pkg}" do
+    package pkg do
       action :install
     end
   end
 else
-  package "#{pkg_list}" do
+  package pkg_list do
     action :install
   end
 end

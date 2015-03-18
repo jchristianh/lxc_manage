@@ -48,12 +48,12 @@ action :create do
       if (new_resource.lxc_vars.has_key?("network"))
         new_resource.lxc_vars['network'].each do |dev,vars|
           gen_mac = generate_mac
-          node.set['lxc_container']['node']["#{new_resource.lxc_name}"]['network']["#{dev}"]['hwaddr'] = gen_mac
+          node.set['lxc_container']['node'][new_resource.lxc_name]['network'][dev]['hwaddr'] = gen_mac
           node.save
         end
       else
         gen_mac = generate_mac
-        node.set["lxc_container"]["node"]["#{new_resource.lxc_name}"]["network"]["eth0"]["hwaddr"] = gen_mac
+        node.set["lxc_container"]["node"][new_resource.lxc_name]["network"]["eth0"]["hwaddr"] = gen_mac
         node.save
       end
     end
@@ -68,7 +68,7 @@ action :create do
         variables ( lazy {
           {
             :network_device => dev,
-            :hwaddr         => node["lxc_container"]["node"]["#{new_resource.lxc_name}"]["network"]["#{dev}"]["hwaddr"],
+            :hwaddr         => node["lxc_container"]["node"][new_resource.lxc_name]["network"][dev]["hwaddr"],
             :ipaddr         => vars['ip'],
             :ipcidr         => vars['cidr'],
             :ipgateway      => vars['gw']
@@ -89,7 +89,7 @@ action :create do
   end
 
 
-  template "#{lxc_conf}" do
+  template lxc_conf do
     source "container_config.erb"
 
     variables ( lazy {
@@ -133,7 +133,7 @@ action :update_conf do
         variables ( lazy {
           {
             :network_device => dev,
-            :hwaddr         => node["lxc_container"]["node"]["#{new_resource.lxc_name}"]["network"]["#{dev}"]["hwaddr"],
+            :hwaddr         => node["lxc_container"]["node"][new_resource.lxc_name]["network"][dev]["hwaddr"],
             :ipaddr         => vars['ip'],
             :ipcidr         => vars['cidr'],
             :ipgateway      => vars['gw']
@@ -162,7 +162,7 @@ action :update_conf do
   end
 
 
-  template "#{lxc_conf}" do
+  template lxc_conf do
     source "container_config.erb"
 
     variables ( lazy {
@@ -204,5 +204,5 @@ action :destroy do
     only_if "lxc-ls | grep #{new_resource.lxc_name}"
   end
 
-  node.rm("lxc_container", "node", "#{new_resource.lxc_name}")
+  node.rm("lxc_container", "node", new_resource.lxc_name)
 end

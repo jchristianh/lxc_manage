@@ -200,7 +200,7 @@ end
 
 action :destroy do
   execute "destroy-lxc-#{new_resource.lxc_name}" do
-    command "lxc-stop -k -n #{new_resource.lxc_name}; lxc-destroy -n #{new_resource.lxc_name}"
+    command "lxc-stop -n #{new_resource.lxc_name}; lxc-destroy -n #{new_resource.lxc_name}"
     only_if "lxc-ls | grep #{new_resource.lxc_name}"
   end
 

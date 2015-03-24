@@ -15,7 +15,6 @@ action :create do
   lxc_base     = node["lxc_container"]["path"] + "/" + new_resource.lxc_name
   lxc_type     = new_resource.lxc_vars['type']    || "centos"
   lxc_ver      = new_resource.lxc_vars['version'] || false
-  lxc_run      = new_resource.lxc_vars['run']     || false
   rootfs       = lxc_base + "/rootfs"
   lxc_conf     = lxc_base + "/config"
   lxc_opts     = ''
@@ -65,7 +64,7 @@ action :create do
       template "#{lxc_base}/rootfs/etc/sysconfig/network-scripts/ifcfg-#{dev}" do
         source "ifcfg.erb"
 
-        variables ( lazy {
+        variables( lazy {
           {
             :network_device => dev,
             :hwaddr         => node["lxc_container"]["node"][new_resource.lxc_name]["network"][dev]["hwaddr"],
@@ -78,13 +77,13 @@ action :create do
     end
 
 
-    if (lxc_type == "centos" && (lxc_ver == false || lxc_ver == "7"))
-      cookbook_file "#{lxc_base}/rootfs/etc/sysctl.d/99-rp_filter.conf" do
-        source "99-rp_filter.conf"
-        owner  "root"
-        group  "root"
-        mode   "0644"
-      end
+    cookbook_file "#{lxc_base}/rootfs/etc/sysctl.d/99-rp_filter.conf" do
+      source "99-rp_filter.conf"
+      owner  "root"
+      group  "root"
+      mode   "0644"
+
+      only_if { lxc_type == "centos" && (lxc_ver == false || lxc_ver == "7") }
     end
   end
 
@@ -92,7 +91,7 @@ action :create do
   template lxc_conf do
     source "container_config.erb"
 
-    variables ( lazy {
+    variables( lazy {
       {
         :rootfs       => rootfs,
         :utsname_pre  => new_resource.lxc_name,
@@ -107,6 +106,8 @@ action :create do
 
     only_if { ::File.exists?("#{lxc_conf}.dist") }
   end
+
+  new_resource.updated_by_last_action(true)
 end
 
 
@@ -115,10 +116,8 @@ action :update_conf do
   lxc_base     = node["lxc_container"]["path"] + "/" + new_resource.lxc_name
   lxc_type     = new_resource.lxc_vars['type']    || "centos"
   lxc_ver      = new_resource.lxc_vars['version'] || false
-  lxc_run      = new_resource.lxc_vars['run']     || false
   rootfs       = lxc_base + "/rootfs"
   lxc_conf     = lxc_base + "/config"
-  lxc_opts     = ''
   autostart    = new_resource.lxc_vars['autostart']
   startdelay   = new_resource.lxc_vars['startdelay'] || 0
   startorder   = new_resource.lxc_vars['startorder'] || 1
@@ -130,7 +129,7 @@ action :update_conf do
       template "#{lxc_base}/rootfs/etc/sysconfig/network-scripts/ifcfg-#{dev}" do
         source "ifcfg.erb"
 
-        variables ( lazy {
+        variables( lazy {
           {
             :network_device => dev,
             :hwaddr         => node["lxc_container"]["node"][new_resource.lxc_name]["network"][dev]["hwaddr"],
@@ -145,27 +144,27 @@ action :update_conf do
     template "#{lxc_base}/rootfs/etc/sysconfig/network-scripts/ifcfg-eth0" do
       source "ifcfg.erb"
 
-      variables ({
+      variables({
         :lxc_name => new_resource.lxc_name
       })
     end
   end
 
 
-  if (lxc_type == "centos" && (lxc_ver == false || lxc_ver == "7"))
-    cookbook_file "#{lxc_base}/rootfs/etc/sysctl.d/99-rp_filter.conf" do
-      source "99-rp_filter.conf"
-      owner  "root"
-      group  "root"
-      mode   "0644"
-    end
+  cookbook_file "#{lxc_base}/rootfs/etc/sysctl.d/99-rp_filter.conf" do
+    source "99-rp_filter.conf"
+    owner  "root"
+    group  "root"
+    mode   "0644"
+
+    only_if { lxc_type == "centos" && (lxc_ver == false || lxc_ver == "7") }
   end
 
 
   template lxc_conf do
     source "container_config.erb"
 
-    variables ( lazy {
+    variables( lazy {
       {
         :rootfs       => rootfs,
         :utsname_pre  => new_resource.lxc_name,
@@ -181,6 +180,7 @@ action :update_conf do
     only_if { ::File.exists?("#{lxc_conf}.dist") }
   end
 
+  new_resource.updated_by_last_action(true)
 end
 
 
@@ -188,6 +188,7 @@ action :stop do
   execute "stopping-lxc-#{new_resource.name}" do
     command "lxc-stop -n #{new_resource.lxc_name}"
   end
+  new_resource.updated_by_last_action(true)
 end
 
 
@@ -195,6 +196,7 @@ action :start do
   execute "starting-lxc-#{new_resource.name}" do
     command "lxc-start -n #{new_resource.lxc_name} -d"
   end
+  new_resource.updated_by_last_action(true)
 end
 
 
@@ -205,4 +207,6 @@ action :destroy do
   end
 
   node.rm("lxc_container", "node", new_resource.lxc_name)
+
+  new_resource.updated_by_last_action(true)
 end

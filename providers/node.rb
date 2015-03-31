@@ -32,6 +32,7 @@ action :create do
   startdelay   = new_resource.lxc_vars['startdelay'] || 0
   startorder   = new_resource.lxc_vars['startorder'] || 1
   lxcgroup     = new_resource.lxc_vars['group']      || "ungrouped"
+  limit_cpu    = new_resource.lxc_vars['limit_cpu'] || false
 
 
   if (lxc_ver)
@@ -110,7 +111,10 @@ action :create do
         :autostart    => autostart,
         :start_delay  => startdelay,
         :start_order  => startorder,
-        :group        => lxcgroup
+        :group        => lxcgroup,
+        :limit_cpu    => limit_cpu,
+        :cpu_cores    => new_resource.lxc_vars['cpu_cores'],
+        :cpu_shares   => new_resource.lxc_vars['cpu_shares']
       }
     })
 
@@ -132,6 +136,7 @@ action :update_conf do
   startdelay   = new_resource.lxc_vars['startdelay'] || 0
   startorder   = new_resource.lxc_vars['startorder'] || 1
   lxcgroup     = new_resource.lxc_vars['group']      || "ungrouped"
+  limit_cpu    = new_resource.lxc_vars['limit_cpu'] || false
 
 
   if (new_resource.lxc_vars.has_key?("network"))
@@ -183,7 +188,10 @@ action :update_conf do
         :autostart    => autostart,
         :start_delay  => startdelay,
         :start_order  => startorder,
-        :group        => lxcgroup
+        :group        => lxcgroup,
+        :limit_cpu    => limit_cpu,
+        :cpu_cores    => new_resource.lxc_vars['cpu_cores'],
+        :cpu_shares   => new_resource.lxc_vars['cpu_shares']
       }
     })
 

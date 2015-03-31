@@ -134,3 +134,10 @@ lxc.start.delay = <%= @start_delay %>
 lxc.start.order = <%= @start_order %>
 <% end %>
 lxc.group       = <%= @group %>
+
+
+# CPU Control
+<% if @limit_cpu %>
+lxc.cgroup.cpuset.cpus = <%= @cpu_cores %>
+lxc.cgroup.cpu.shares  = <%= @cpu_shares %>
+<% end %>

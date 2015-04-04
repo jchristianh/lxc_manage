@@ -22,8 +22,9 @@
 # LXC seems to prefix its generated addresses with 'fe', so
 # that's what we're going to adhere to.
 def generate_mac
-  mac = `openssl rand -hex 6`.chomp
-  mac = mac.scan(/.{1,2}/).join(":")
+  mac = Mixlib::ShellOut.new('openssl rand -hex 6')
+  mac.run_command
+  mac = mac.stdout.chomp.scan(/.{1,2}/).join(":")
 
   if (mac =~ /^fe:/)
     return mac

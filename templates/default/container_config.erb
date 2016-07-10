@@ -89,15 +89,15 @@ lxc.network.flags        = up
 lxc.network.hwaddr       = <%= @node["lxc_container"]["node"][@utsname_pre]["network"][dev]["hwaddr"] %>
 lxc.network.link         = <%= @network[dev]["link"] %>
 lxc.network.name         = <%= dev %>
-
-<% end %>
+lxc.network.ipv4         = <%= @network[dev]["ip"] %>/<%= @network[dev]["cidr"] %>
+lxc.network.ipv4.gateway = <%= @network[dev]["gw"] %>
+<% end %> # network.each
 <% else %>
 lxc.network.type = veth
 lxc.network.flags = up
 lxc.network.hwaddr = <%= @node["lxc_container"]["node"][@utsname_pre]["network"]["eth0"]["hwaddr"] %>
 lxc.network.link = br0
 lxc.network.name = eth0
-
 <% end %>
 
 # Private network (isolated)

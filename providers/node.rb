@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/gpl-2.0.txt>.
 
+use_inline_resources
 
 action :create do
 
@@ -49,14 +50,14 @@ action :create do
   # Create a backup of the LXC generated config:
   execute "backup-#{lxc_conf}" do
     command "mv #{lxc_conf} #{lxc_conf}.dist"
-    not_if { ::File.exists?("#{lxc_conf}.dist") }
+    not_if { ::File.exist?("#{lxc_conf}.dist") }
   end
 
 
   ruby_block "mac_addr_#{new_resource.name}" do
     block do
       if (new_resource.lxc_vars.has_key?("network"))
-        new_resource.lxc_vars['network'].each do |dev,vars|
+        new_resource.lxc_vars['network'].each do |dev,_vars|
           gen_mac = generate_mac
           node.set['lxc_container']['node'][new_resource.lxc_name]['network'][dev]['hwaddr'] = gen_mac
           node.save
@@ -118,7 +119,7 @@ action :create do
       }
     })
 
-    only_if { ::File.exists?("#{lxc_conf}.dist") }
+    only_if { ::File.exist?("#{lxc_conf}.dist") }
   end
 
   new_resource.updated_by_last_action(true)
@@ -195,7 +196,7 @@ action :update_conf do
       }
     })
 
-    only_if { ::File.exists?("#{lxc_conf}.dist") }
+    only_if { ::File.exist?("#{lxc_conf}.dist") }
   end
 
   new_resource.updated_by_last_action(true)

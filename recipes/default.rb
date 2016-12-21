@@ -22,10 +22,6 @@
 include_recipe "lxc_manage::packages"
 
 
-# Pull list of nodes from the data bag:
-# lxc_nodes = search(:lxc_nodes, 'id:*')
-
-
 node['lxc_container']['nodes'].each do |ln|
   lxc_node = data_bag_item("lxc_nodes", ln)
 

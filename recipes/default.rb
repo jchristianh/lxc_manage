@@ -44,6 +44,14 @@ node['lxc_container']['nodes'].each do |ln|
         only_if "lxc-ls | grep #{lxc_node['id']}"
         only_if "lxc-ls --active | grep #{lxc_node['id']}"
       end
+      lxc_manage_node "update-conf-#{lxc_node['id']}" do
+        lxc_name lxc_node['id']
+        lxc_ver  lxc_node['version'] if lxc_node['version']
+        lxc_vars lxc_node
+        action :update_conf
+        only_if "lxc-ls | grep #{lxc_node['id']}"
+        # not_if "lxc-ls --active | grep #{lxc_node['id']}"
+      end
     else
       lxc_manage_node "update-conf-#{lxc_node['id']}" do
         lxc_name lxc_node['id']
@@ -51,7 +59,7 @@ node['lxc_container']['nodes'].each do |ln|
         lxc_vars lxc_node
         action :update_conf
         only_if "lxc-ls | grep #{lxc_node['id']}"
-        not_if "lxc-ls --active | grep #{lxc_node['id']}"
+        # not_if "lxc-ls --active | grep #{lxc_node['id']}"
       end
       lxc_manage_node "start-#{lxc_node['id']}" do
         lxc_name lxc_node['id']

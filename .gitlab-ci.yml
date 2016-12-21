@@ -1,0 +1,42 @@
+# CI  Mark that build is executed in CI environment
+# GITLAB_CI   Mark that build is executed in GitLab CI environment
+# CI_SERVER   Mark that build is executed in CI environment
+# CI_SERVER_NAME  CI server that is used to coordinate builds
+# CI_SERVER_VERSION   Not yet defined
+# CI_SERVER_REVISION  Not yet defined
+# CI_BUILD_REF  The commit revision for which project is built
+# CI_BUILD_BEFORE_SHA   The first commit that were included in push request
+# CI_BUILD_REF_NAME   The branch or tag name for which project is built
+# CI_BUILD_ID   The unique id of the current build that GitLab CI uses internally
+# CI_BUILD_REPO   The URL to clone the Git repository
+# CI_PROJECT_ID   The unique id of the current project that GitLab CI uses internally
+# CI_PROJECT_DIR  The full path where the repository is cloned and where the build is ran
+
+
+variables:
+  DOCKER_VOLUMES:   "-v /opt/docker_private/.ssh:/root/.ssh -v /opt/docker_private/.chef:/root/.chef -v ${CI_PROJECT_DIR}:${CI_PROJECT_DIR}"
+  COOKBOOK_NAME:    "lxc_manage"
+  DOCKER_IMG:       "docker.thezengarden.net/chef-ci"
+
+
+stages:
+  - check_syntax
+
+
+syntax_job:
+  stage: check_syntax
+  tags:
+    - chef
+    - ruby
+  only:
+    - development
+  script:
+    - knife node show `hostname`
+    - docker pull docker.thezengarden.net/chef-ci
+    - docker run --rm $DOCKER_VOLUMES -i "${DOCKER_IMG}" /bin/bash -l -c "cd ${CI_PROJECT_DIR} && git log -1"
+    - docker run --rm $DOCKER_VOLUMES -i "${DOCKER_IMG}" /bin/bash -l -c "ruby -v"
+    - docker run --rm $DOCKER_VOLUMES -i "${DOCKER_IMG}" /bin/bash -l -c "foodcritic -V"
+    - docker run --rm $DOCKER_VOLUMES -i "${DOCKER_IMG}" /bin/bash -l -c "rubocop -V"
+    - docker run --rm $DOCKER_VOLUMES -i "${DOCKER_IMG}" /bin/bash -l -c "rubocop -l ${CI_PROJECT_DIR}"
+    - docker run --rm $DOCKER_VOLUMES -i "${DOCKER_IMG}" /bin/bash -l -c "foodcritic -P -f any ${CI_PROJECT_DIR}"
+    - knife cookbook upload $COOKBOOK_NAME

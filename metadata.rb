@@ -5,3 +5,5 @@ license          'GPL v2'
 description      'Installs/Configures lxc_manage'
 long_description IO.read(File.join(File.dirname(__FILE__), 'README.md'))
 version          '0.4.2'
+issues_url       'http://www.thezengarden.net'
+source_url       'http://www.thezengarden.net'

@@ -17,7 +17,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/gpl-2.0.txt>.
 
-use_inline_resources
 
 action :create do
 
@@ -59,13 +58,11 @@ action :create do
       if (new_resource.lxc_vars.has_key?("network"))
         new_resource.lxc_vars['network'].each do |dev,_vars|
           gen_mac = generate_mac
-          node.set['lxc_container']['node'][new_resource.lxc_name]['network'][dev]['hwaddr'] = gen_mac
-          node.save
+          node.normal['lxc_container']['node'][new_resource.lxc_name]['network'][dev]['hwaddr'] = gen_mac
         end
       else
         gen_mac = generate_mac
-        node.set["lxc_container"]["node"][new_resource.lxc_name]["network"]["eth0"]["hwaddr"] = gen_mac
-        node.save
+        node.normal["lxc_container"]["node"][new_resource.lxc_name]["network"]["eth0"]["hwaddr"] = gen_mac
       end
     end
   end
@@ -121,8 +118,6 @@ action :create do
 
     only_if { ::File.exist?("#{lxc_conf}.dist") }
   end
-
-  new_resource.updated_by_last_action(true)
 end
 
 
@@ -198,8 +193,6 @@ action :update_conf do
 
     only_if { ::File.exist?("#{lxc_conf}.dist") }
   end
-
-  new_resource.updated_by_last_action(true)
 end
 
 
@@ -207,7 +200,6 @@ action :stop do
   execute "stopping-lxc-#{new_resource.name}" do
     command "lxc-stop -n #{new_resource.lxc_name}"
   end
-  new_resource.updated_by_last_action(true)
 end
 
 
@@ -215,7 +207,6 @@ action :start do
   execute "starting-lxc-#{new_resource.name}" do
     command "lxc-start -n #{new_resource.lxc_name} -d"
   end
-  new_resource.updated_by_last_action(true)
 end
 
 
@@ -226,6 +217,4 @@ action :destroy do
   end
 
   node.rm("lxc_container", "node", new_resource.lxc_name)
-
-  new_resource.updated_by_last_action(true)
 end

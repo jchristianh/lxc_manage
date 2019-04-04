@@ -16,7 +16,7 @@
 variables:
   DOCKER_VOLUMES:   "-v /opt/docker_private/.ssh:/root/.ssh -v /opt/docker_private/.chef:/root/.chef -v ${CI_PROJECT_DIR}:${CI_PROJECT_DIR}"
   COOKBOOK_NAME:    "lxc_manage"
-  DOCKER_IMG:       "docker.thezengarden.net/chef-ci"
+  DOCKER_IMG:       "docker.thezengarden.net/zen-ci"
 
 
 stages:
@@ -31,12 +31,11 @@ syntax_job:
   only:
     - development
   script:
-    - knife node show `hostname`
-    - docker pull docker.thezengarden.net/chef-ci
-    - docker run --rm $DOCKER_VOLUMES -i "${DOCKER_IMG}" /bin/bash -l -c "cd ${CI_PROJECT_DIR} && git log -1"
-    - docker run --rm $DOCKER_VOLUMES -i "${DOCKER_IMG}" /bin/bash -l -c "ruby -v"
-    - docker run --rm $DOCKER_VOLUMES -i "${DOCKER_IMG}" /bin/bash -l -c "foodcritic -V"
-    - docker run --rm $DOCKER_VOLUMES -i "${DOCKER_IMG}" /bin/bash -l -c "rubocop -V"
-    - docker run --rm $DOCKER_VOLUMES -i "${DOCKER_IMG}" /bin/bash -l -c "rubocop -l ${CI_PROJECT_DIR}"
-    - docker run --rm $DOCKER_VOLUMES -i "${DOCKER_IMG}" /bin/bash -l -c "foodcritic -P -f any ${CI_PROJECT_DIR}"
-    - knife cookbook upload $COOKBOOK_NAME
+    - "cd ${CI_PROJECT_DIR} && git log -1"
+    - /bin/bash -l -c "source /etc/profile.d/rvm.sh; ruby -v"
+    - /bin/bash -l -c "source /etc/profile.d/rvm.sh; foodcritic -V"
+    - /bin/bash -l -c "source /etc/profile.d/rvm.sh; rubocop -V"
+    - /bin/bash -l -c "source /etc/profile.d/rvm.sh; rubocop -l ${CI_PROJECT_DIR}"
+    - /bin/bash -l -c "source /etc/profile.d/rvm.sh; foodcritic -P -f any ${CI_PROJECT_DIR}"
+  # we will need to get docker ci working in a manner which once again allows this:
+  # - knife cookbook upload $COOKBOOK_NAME
